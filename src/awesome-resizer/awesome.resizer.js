@@ -36,8 +36,8 @@
 
         if (settings['container'] === null){ settings['container'] = $image.parent(); }
 
-        settings['width'] = settings['container'].width();
-        settings['height'] = settings['container'].height();
+        settings['width'] = settings['width'] !== null ? settings['width'] : settings['container'].width();
+        settings['height'] = settings['height'] !== null ? settings['height'] : settings['container'].height();
 
         settings['stretch'] ? methods.stretchImage() : methods.resizeImage();
 
