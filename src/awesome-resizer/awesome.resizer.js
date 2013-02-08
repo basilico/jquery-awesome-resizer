@@ -34,33 +34,31 @@
         $image.attr('original-width', $image.width());
         $image.attr('original-height', $image.height());
 
-        if (settings['stretch'] && settings['container'] === null){ settings['container'] = $image.parent(); }
+        if (settings['container'] === null){ settings['container'] = $image.parent(); }
 
+        settings['width'] = settings['container'].width();
+        settings['height'] = settings['container'].height();
+
+        settings['stretch'] ? methods.stretchImage() : methods.resizeImage();
+
+        if (settings['fluid']){
+          $(window).on('resize', function(){ $(this).trigger('resize-event'); });
+          $(window).on('resize-event', methods.resizeHandler);
+        }
+      });
+    },
+
+    resizeHandler: function(){
+      setTimeout(function(){
         if (settings['container'] !== null){          
           settings['width'] = settings['container'].width();
           settings['height'] = settings['container'].height();
-        }else{
-          if (settings['width'] === null){ settings['width'] = $image.width(); }
-          if (settings['height'] === null){ settings['height'] = $image.height(); }
         }
 
-        settings['stretch'] 
+        settings['stretch']
           ? methods.stretchImage() 
           : methods.resizeImage();
-
-        if (settings['fluid']){
-          $(window).on('resize', function(){
-            if (settings['container'] !== null){          
-              settings['width'] = settings['container'].width();
-              settings['height'] = settings['container'].height();
-            }
-
-            settings['stretch']
-              ? methods.stretchImage() 
-              : methods.resizeImage();
-          });
-        }
-      });
+        }, 200);
     },
 
     loadImage : function(callback){
@@ -85,6 +83,8 @@
       var newHeight = originalHeight;
       var ratio = 0;
 
+      if (settings['fluid']){ $(window).off('resize-event'); }
+
       if (originalWidth > settings['width']){
         ratio = settings['width'] / originalWidth;
         newWidth = settings['width'];
@@ -98,21 +98,34 @@
       }
 
       $image.css({ 'width': newWidth, 'height': newHeight });
+
+      if (settings['fluid']){ $(window).on('resize-event', methods.resizeHandler); }
     },
 
     stretchImage: function(){
+      var deltaTop, deltaLeft;
+
+      if (settings['fluid']){ $(window).off('resize-event'); }
+
       $image
         .css({ 'width': 'auto', 'marginTop': 0, 'marginLeft': 0 })
-        .height(settings['container'].height());
+        .height(settings['height']);
 
-      if ($image.width() < settings['container'].width()){
+      $image.css('height', settings['height']);
+
+      if ($image.width() < settings['width']){
         $image.css({ 'width': '100%', 'height': 'auto'});
       }
-      
+
+      deltaTop = settings['height'] - $image.height();
+      deltaLeft = settings['width'] - $image.width();
+
       $image.css({ 
-        'marginTop': (settings['container'].height() - $image.height()) / 2,
-        'marginLeft': (settings['container'].width() - $image.width()) / 2
+        'marginTop': deltaTop <= 0 ? (deltaTop / 2) : 0,
+        'marginLeft': deltaLeft <=0 ? (deltaLeft / 2) : 0
       });
+
+      if (settings['fluid']){ $(window).on('resize-event', methods.resizeHandler); }
     }
   }
 
