@@ -14,11 +14,15 @@ What you can do:
 Parameters
 ==========
 
-width     : float
-height    : float
-container : DOM Object
-stretch   : boolean
-fluid     : boolean
+```javascript
+  var settings = {
+      'width'       : null,
+      'height'      : null,
+      'container'   : null,
+      'stretch'     : false, 
+      'fluid'       : false
+  };
+```
 
 ******
 
@@ -34,14 +38,14 @@ How it works
   });
 ```
 
-- resize an image using the size of its parent container: 
+-resize an image using the size of its parent container: 
 ```javascript
   $('img').awesomeResizer({
     'container' : $('#container')
   });
 ```
 
-- stretch an image (fullscreen): 
+-stretch an image (fullscreen): 
 ```javascript
   $('img').awesomeResizer({
     'container' : $(window),
@@ -49,7 +53,7 @@ How it works
   });
 ```
 
-- resize an image smoothly when window resize event called: 
+-resize an image smoothly when window resize event called: 
 ```javascript
   $('img').awesomeResizer({
     'stretch'   : true,
