@@ -22,29 +22,32 @@
       'fluid'       : false
   };
 
-  var $image;
+  var $images;
 
   var methods = {
     init : function(options) { 
-      $image = this;
+      $images = this;
       settings = $.extend(settings, options);
 
-      methods.loadImage(function(){
+      $images.each(function(){
+        var $image = $(this);
+        methods.loadImage($image, function($image){
 
-        $image.attr('original-width', $image.width());
-        $image.attr('original-height', $image.height());
+          $image.attr('original-width', $image.width());
+          $image.attr('original-height', $image.height());
 
-        if (settings['container'] === null){ settings['container'] = $image.parent(); }
+          if (settings['container'] === null){ settings['container'] = $image.parent(); }
 
-        settings['width'] = settings['width'] !== null ? settings['width'] : settings['container'].width();
-        settings['height'] = settings['height'] !== null ? settings['height'] : settings['container'].height();
+          settings['width'] = settings['width'] !== null ? settings['width'] : settings['container'].width();
+          settings['height'] = settings['height'] !== null ? settings['height'] : settings['container'].height();
 
-        settings['stretch'] ? methods.stretchImage() : methods.resizeImage();
+          settings['stretch'] ? methods.stretchImage() : methods.resizeImage();
 
-        if (settings['fluid']){
-          $(window).on('resize', function(){ $(this).trigger('resize-event'); });
-          $(window).on('resize-event', methods.resizeHandler);
-        }
+          if (settings['fluid']){
+            $(window).on('resize', function(){ $(this).trigger('resize-event'); });
+            $(window).on('resize-event', methods.resizeHandler);
+          }
+        });
       });
     },
 
@@ -61,71 +64,84 @@
         }, 200);
     },
 
-    loadImage : function(callback){
+    loadImage : function($image, callback){
+
       if (undefined !== $image.attr('data-src')){
-        $image.parent().addClass('awesome-resizer-loader');
-        $image.css('opacity', 0)
-        $image.load(function(){
-            callback();
-            $image.animate({ opacity : 1 }, 'fast', 'easeInOutCubic', function(){
-              $image.parent().removeClass('awesome-resizer-loader');
-            });
-          }).attr('src', $image.attr('data-src'));
+      $image.parent().addClass('awesome-resizer-loader');
+      $image.css('opacity', 0)
+      $image.load(function(){
+          callback($image);
+          $image.animate({ opacity : 1 }, 'fast', 'easeInOutCubic', function(){
+            $image.parent().removeClass('awesome-resizer-loader');
+          });
+        }).attr('src', $image.attr('data-src'));
       }else{
-        $image[0].complete ? callback() : $image.load(callback).attr('src', $image.attr('src'));
-      }
+        if ($image[0].complete){
+          callback($image);
+        }else{
+          $image.load(function(){
+            callback($image);
+          }).attr('src', $image.attr('src'));
+        }
+      }        
     },
 
     resizeImage: function(){
-      var originalWidth = parseInt($image.attr('original-width'));
-      var originalHeight = parseInt($image.attr('original-height'));
-      var newWidth = originalWidth; 
-      var newHeight = originalHeight;
-      var ratio = 0;
+      $images.each(function(){
 
-      if (settings['fluid']){ $(window).off('resize-event'); }
+        var $image = $(this);
+        var originalWidth = parseInt($image.attr('original-width'));
+        var originalHeight = parseInt($image.attr('original-height'));
+        var newWidth = originalWidth; 
+        var newHeight = originalHeight;
+        var ratio = 0;
 
-      if (originalWidth > settings['width']){
-        ratio = settings['width'] / originalWidth;
-        newWidth = settings['width'];
-        newHeight = originalHeight * ratio;
-      }
+        if (settings['fluid']){ $(window).off('resize-event'); }
 
-      if (originalHeight > settings['height']){
-        ratio = settings['height'] / originalHeight;
-        newWidth = originalWidth * ratio;
-        newHeight = settings['height'];
-      }
+        if (originalWidth > settings['width']){
+          ratio = settings['width'] / originalWidth;
+          newWidth = settings['width'];
+          newHeight = originalHeight * ratio;
+        }
 
-      $image.css({ 'width': newWidth, 'height': newHeight });
+        if (originalHeight > settings['height']){
+          ratio = settings['height'] / originalHeight;
+          newWidth = originalWidth * ratio;
+          newHeight = settings['height'];
+        }
 
-      if (settings['fluid']){ $(window).on('resize-event', methods.resizeHandler); }
+        $image.css({ 'width': newWidth, 'height': newHeight });
+
+        if (settings['fluid']){ $(window).on('resize-event', methods.resizeHandler); }
+      });
     },
 
     stretchImage: function(){
-      var deltaTop, deltaLeft;
+      $images.each(function(){
 
-      if (settings['fluid']){ $(window).off('resize-event'); }
+        var $image = $(this);
+        var deltaTop, deltaLeft;
 
-      $image
-        .css({ 'width': 'auto', 'marginTop': 0, 'marginLeft': 0 })
-        .height(settings['height']);
+        if (settings['fluid']){ $(window).off('resize-event'); }
 
-      $image.css('height', settings['height']);
+        $image
+          .css({ 'width': 'auto', 'marginTop': 0, 'marginLeft': 0 })
+          .height(settings['height']);
 
-      if ($image.width() < settings['width']){
-        $image.css({ 'width': '100%', 'height': 'auto'});
-      }
+        if ($image.width() < settings['width']){
+          $image.css({ 'width': '100%', 'height': 'auto'});
+        }
 
-      deltaTop = settings['height'] - $image.height();
-      deltaLeft = settings['width'] - $image.width();
+        deltaTop = settings['height'] - $image.height();
+        deltaLeft = settings['width'] - $image.width();
 
-      $image.css({ 
-        'marginTop': deltaTop <= 0 ? (deltaTop / 2) : 0,
-        'marginLeft': deltaLeft <=0 ? (deltaLeft / 2) : 0
+        $image.css({ 
+          'marginTop': deltaTop <= 0 ? (deltaTop / 2) : 0,
+          'marginLeft': deltaLeft <=0 ? (deltaLeft / 2) : 0
+        });
+
+        if (settings['fluid']){ $(window).on('resize-event', methods.resizeHandler); }        
       });
-
-      if (settings['fluid']){ $(window).on('resize-event', methods.resizeHandler); }
     }
   }
 
