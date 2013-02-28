@@ -67,14 +67,14 @@
     loadImage : function($image, callback){
 
       if (undefined !== $image.attr('data-src')){
-      $image.parent().addClass('awesome-resizer-loader');
-      $image.css('opacity', 0)
-      $image.load(function(){
-          callback($image);
-          $image.animate({ opacity : 1 }, 'fast', 'easeInOutCubic', function(){
-            $image.parent().removeClass('awesome-resizer-loader');
-          });
-        }).attr('src', $image.attr('data-src'));
+        $image.parent().addClass('awesome-resizer-loader');
+        $image.css('opacity', 0);
+        $image.load(function(){
+            callback($image);
+            $image.animate({ opacity : 1 }, 'fast', 'easeInOutCubic', function(){
+              $image.parent().removeClass('awesome-resizer-loader');
+            });
+          }).attr('src', $image.attr('data-src'));
       }else{
         if ($image[0].complete){
           callback($image);
