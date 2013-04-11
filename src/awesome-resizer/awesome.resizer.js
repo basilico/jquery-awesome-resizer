@@ -5,7 +5,7 @@
  * @link http://https://github.com/Basilico/jquery-awesome-resizer
  * @created 04-12-2012
  * @updated undefined
- * @version 0.1
+ * @version 0.2
  *
  * Description:
  * jQuery Awesome resizer is a multifunctional image resizer. 
@@ -17,8 +17,7 @@
   var settings = {
       'width'       : null,
       'height'      : null,
-      'container'   : null,
-      'stretch'     : false, 
+      'fit'         : false, 
       'fluid'       : false
   };
 
@@ -36,12 +35,10 @@
           $image.attr('original-width', $image.width());
           $image.attr('original-height', $image.height());
 
-          if (settings['container'] === null){ settings['container'] = $image.parent(); }
+          $image.attr('resize-width', settings['width'] !== null ? settings['width'] : $image.parent().width());
+          $image.attr('resize-height', settings['height'] !== null ? settings['height'] : $image.parent().height());
 
-          settings['width'] = settings['width'] !== null ? settings['width'] : settings['container'].width();
-          settings['height'] = settings['height'] !== null ? settings['height'] : settings['container'].height();
-
-          settings['stretch'] ? methods.stretchImage() : methods.resizeImage();
+          settings['fit'] ? methods.fitImage() : methods.resizeImage();
 
           if (settings['fluid']){
             $(window).on('resize', function(){ $(this).trigger('resize-event'); });
@@ -53,13 +50,15 @@
 
     resizeHandler: function(){
       setTimeout(function(){
-        if (settings['container'] !== null){          
-          settings['width'] = settings['container'].width();
-          settings['height'] = settings['container'].height();
-        }
-
-        settings['stretch']
-          ? methods.stretchImage() 
+        $images.each(function(){
+          if (settings['width'] === null &&  settings['height'] === null){
+            $image.attr('resize-width', $image.parent().width());
+            $image.attr('resize-height', $image.parent().height());
+          }
+        });  
+        
+        settings['fit']
+          ? methods.fitImage() 
           : methods.resizeImage();
         }, 200);
     },
@@ -92,22 +91,24 @@
         var $image = $(this);
         var originalWidth = parseInt($image.attr('original-width'));
         var originalHeight = parseInt($image.attr('original-height'));
+        var resizeWidth = parseInt($image.attr('resize-width'));
+        var resizeHeight = parseInt($image.attr('resize-height'));
         var newWidth = originalWidth; 
         var newHeight = originalHeight;
         var ratio = 0;
 
         if (settings['fluid']){ $(window).off('resize-event'); }
 
-        if (originalWidth > settings['width']){
-          ratio = settings['width'] / originalWidth;
-          newWidth = settings['width'];
+        if (originalWidth > resizeWidth){
+          ratio = resizeWidth / originalWidth;
+          newWidth = resizeWidth;
           newHeight = originalHeight * ratio;
         }
 
-        if (originalHeight > settings['height']){
-          ratio = settings['height'] / originalHeight;
+        if (originalHeight > resizeHeight){
+          ratio = resizeHeight / originalHeight;
           newWidth = originalWidth * ratio;
-          newHeight = settings['height'];
+          newHeight = resizeHeight;
         }
 
         $image.css({ 'width': newWidth, 'height': newHeight });
@@ -116,24 +117,26 @@
       });
     },
 
-    stretchImage: function(){
+    fitImage: function(){
       $images.each(function(){
 
         var $image = $(this);
+        var resizeWidth = parseInt($image.attr('resize-width'));
+        var resizeHeight = parseInt($image.attr('resize-height'));
         var deltaTop, deltaLeft;
 
         if (settings['fluid']){ $(window).off('resize-event'); }
 
         $image
           .css({ 'width': 'auto', 'marginTop': 0, 'marginLeft': 0 })
-          .height(settings['height']);
+          .height(resizeHeight);
 
-        if ($image.width() < settings['width']){
+        if ($image.width() < resizeWidth){
           $image.css({ 'width': '100%', 'height': 'auto'});
         }
 
-        deltaTop = settings['height'] - $image.height();
-        deltaLeft = settings['width'] - $image.width();
+        deltaTop = resizeHeight - $image.height();
+        deltaLeft = resizeWidth - $image.width();
 
         $image.css({ 
           'marginTop': deltaTop <= 0 ? (deltaTop / 2) : 0,

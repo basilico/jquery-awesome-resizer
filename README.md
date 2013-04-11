@@ -6,7 +6,7 @@ With this plugin you can resize an image in different ways.
 What you can do:
 - resize an image using the size that you want.
 - resize an image using the size of its parent container.
-- stretch an image (fullscreen or parent size).
+- fit an image with the parent size.
 - resize an image smoothly on window resize event.
 
 ******
@@ -18,8 +18,7 @@ Parameters
   var settings = {
       'width'       : null,
       'height'      : null,
-      'container'   : null,
-      'stretch'     : false, 
+      'fit'         : false, 
       'fluid'       : false
   };
 ```
@@ -38,25 +37,17 @@ How it works
   });
 ```
 
--resize an image using the size of its parent container: 
+-fit an image with parent container size of image: 
 ```javascript
   $('img').awesomeResizer({
-    'container' : $('#container')
-  });
-```
-
--stretch an image (fullscreen): 
-```javascript
-  $('img').awesomeResizer({
-    'container' : $(window),
-    'stretch'   : true
+    'fit' : true
   });
 ```
 
 -resize an image smoothly when window resize event called: 
 ```javascript
   $('img').awesomeResizer({
-    'stretch'   : true,
+    'fit'   : true,
     'fluid'     : true
   });
 ```
