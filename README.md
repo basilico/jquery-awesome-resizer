@@ -18,8 +18,11 @@ Parameters
   var settings = {
       'width'       : null,
       'height'      : null,
-      'fit'         : false, 
-      'fluid'       : false
+      'fit'         : false,
+      'fitOverflow' : true,
+      'fluid'       : false,
+      'fluidResize' : true,
+      'onLoadImage' : null
   };
 ```
 
@@ -48,7 +51,7 @@ How it works
 ```javascript
   $('img').awesomeResizer({
     'fit'   : true,
-    'fluid'     : true
+    'fluid' : true
   });
 ```
 
