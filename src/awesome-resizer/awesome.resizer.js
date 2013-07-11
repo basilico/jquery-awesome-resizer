@@ -15,13 +15,19 @@
 (function($){
 
   var settings = {
-      'width'       : null,
-      'height'      : null,
-      'fit'         : false,
-      'fitOverflow' : true,
-      'fluid'       : false,
-      'fluidResize' : true,
-      'onLoadImage' : null
+      'width'               : null,
+      'height'              : null,
+      'fit'                 : false,
+      'fitWidth'            : false,
+      'fitHeight'           : false,
+      'fitOverflow'         : true,
+      'fluid'               : false,
+      'fluidResize'         : true,
+      'centerImage'         : true,
+      'onLoadImage'         : null,
+      'onResizeImage'       : null,
+      'onTotalLoadImage'    : null,
+      'onTotalResizeImage'  : null
   };
 
   var $images;
@@ -32,6 +38,8 @@
       $images = this;
       settings = $.extend(settings, options);
 
+      var totalImages = $images.length;
+      var loadedImages = 0;
       $images.each(function(){
         var $image = $(this);
         methods.loadImage($image, function($image){
@@ -48,6 +56,13 @@
             $(window).on('resize-event', methods.resizeHandler);
             $(window).on('resize', function(){ $(this).trigger('resize-event'); });
           }
+
+          loadedImages++;
+
+          if (loadedImages === totalImages){
+            if (settings['onTotalLoadImage'] !== null && settings['onTotalLoadImage'] instanceof Function){ settings['onTotalLoadImage']($images); }
+          }
+
         });
       });
     },
@@ -67,10 +82,11 @@
             $image.attr('resize-height', $image.parent().height());
           }
         });
-       
+
         settings['fit']
-          ? methods.fitImage() 
+          ? methods.fitImage()
           : methods.resizeImage();
+
         }, 200);
     },
 
@@ -102,6 +118,9 @@
     },
 
     resizeImage: function(){
+      var totalImages = $images.length;
+      var resizedImages = 0;
+
       $images.each(function(){
 
         var $image = $(this);
@@ -130,10 +149,21 @@
         $image.css({ 'width': newWidth, 'height': newHeight });
 
         if (settings['fluid']){ $(window).on('resize-event', methods.resizeHandler); }
+
+        resizedImages++;
+
+        if (resizedImages === totalImages){
+          if (settings['onTotalResizeImage'] !== null && settings['onTotalResizeImage'] instanceof Function){ settings['onTotalResizeImage']($images); }
+        }
+
+        if (settings['onResizeImage'] !== null && settings['onResizeImage'] instanceof Function){ settings['onResizeImage']($image); }
       });
     },
 
     fitImage: function(){
+      var totalImages = $images.length;
+      var resizedImages = 0;
+
       $images.each(function(){
 
         var $image = $(this);
@@ -147,34 +177,53 @@
           .css({ 'width': 'auto', 'marginTop': 0, 'marginLeft': 0 })
           .height(resizeHeight);
 
-
-        if(settings['fitOverflow']){
-          if ($image.width() < resizeWidth){
-            $image.css({ 'width': '100%', 'height': 'auto'});
+        if(!settings['fitWidth'] && !settings['fitHeight']){
+          if(settings['fitOverflow']){
+            if ($image.width() < resizeWidth){
+              $image.css({ 'width': '100%', 'height': 'auto'});
+            }
+          }else{
+            if ($image.width() > resizeWidth){
+              $image.css({ 'width': '100%', 'height': 'auto'});
+            }
           }
-        }else{
-          if ($image.width() > resizeWidth){
-            $image.css({ 'width': '100%', 'height': 'auto'});
-          }
+        }else if (settings['fitWidth']){
+          $image
+          .css({ 'height': 'auto', 'marginTop': 0, 'marginLeft': 0 })
+          .width(resizeWidth);
+        }else if (settings['fitHeight']){
+          $image
+            .css({ 'width': 'auto', 'marginTop': 0, 'marginLeft': 0 })
+            .height(resizeHeight);
         }
 
-        deltaTop = resizeHeight - $image.height();
-        deltaLeft = resizeWidth - $image.width();
+        if (settings['centerImage']){
 
-        if (settings['fitOverflow']){
-          $image.css({
-            'marginTop': deltaTop < 0 ? (deltaTop / 2) : 0,
-            'marginLeft': deltaLeft < 0 ? (deltaLeft / 2) : 0
-          });
-        }else{
-          $image.css({
-            'marginTop': deltaTop > 0 ? (deltaTop / 2) : 0,
-            'marginLeft': deltaLeft > 0 ? (deltaLeft / 2) : 0
-          });
+          deltaTop = resizeHeight - $image.height();
+          deltaLeft = resizeWidth - $image.width();
+
+          if (settings['fitOverflow']){
+            $image.css({
+              'marginTop': deltaTop < 0 ? (deltaTop / 2) : 0,
+              'marginLeft': deltaLeft < 0 ? (deltaLeft / 2) : 0
+            });
+          }else{
+            $image.css({
+              'marginTop': deltaTop > 0 ? (deltaTop / 2) : 0,
+              'marginLeft': deltaLeft > 0 ? (deltaLeft / 2) : 0
+            });
+          }
         }
-
 
         if (settings['fluid']){ $(window).on('resize-event', methods.resizeHandler); }
+
+        resizedImages++;
+
+        if (resizedImages === totalImages){
+          if (settings['onTotalResizeImage'] !== null && settings['onTotalResizeImage'] instanceof Function){ settings['onTotalResizeImage']($images); }
+        }
+
+        if (settings['onResizeImage'] !== null && settings['onResizeImage'] instanceof Function){ settings['onResizeImage']($image); }
       });
     }
   };
